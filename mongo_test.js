@@ -36,6 +36,35 @@ MongoClient.connect(url,{ useNewUrlParser: true }, (err, client) => {
     });
      });
     
+      app.get('/movies/search', (req, res, next) => {
+            var my_limit = parseInt( req.param('limit'));
+            
+            var my_metascore = parseInt( req.param('metascore'));
+            if (req.param('limit')==null)my_limit=5;
+            if(req.param('metascore')== null) my_metascore=0;
+            collection.aggregate([
+              { $match: { metascore: { $gte: my_metascore } }},
+              { $sample: { size: my_limit } } ]).toArray(function(err, docs) {
+              assert.equal(err, null);
+              console.log("Found the following records");
+              console.log(docs); res.json(docs);
+              
+            });
+        
+          });
+     app.get('/movies/:id', (req, res, next) => {
+      var my_id = req.params.id; console.log(my_id);
+      collection.find({id : my_id}).toArray(function(err, docs) {
+        assert.equal(err, null);
+        console.log("Found the following records");
+        console.log(docs); res.json(docs);
+        
+      });
+      
+    });
+
+    
+    
     /*db.collection("movies").insertMany(movies, function(err, res) {
       if (err) throw err;
       console.log(res.insertedCount+" documents inserted");
