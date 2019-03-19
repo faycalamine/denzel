@@ -1,11 +1,11 @@
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 var fs = require('fs');
+var express = require("express");
+
 var movies = JSON.parse(fs.readFileSync('movies.json', 'utf8'));
-// Connection URL
 const url = 'mongodb+srv://master:1234@movies-cv93f.mongodb.net/test?retryWrites=true';
 
-var express = require("express");
 var app = express();
 app.listen(9292, () => {
  console.log("Server running on port 9292");
@@ -13,12 +13,21 @@ app.listen(9292, () => {
  
 });
 
+var bodyParser = require('body-parser');
+app.use(bodyParser.json()); // support json encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
+
 
 MongoClient.connect(url,{ useNewUrlParser: true }, (err, client) => {
     
     var db = client.db('movies');
     const collection = db.collection('movies');
+    
+    
     console.log("connected");
+
+    
+
     app.get("/movies", (req, res, next) => {
       collection.aggregate([{ $sample: { size: 1 } }]).toArray(function(err, docs) {
       assert.equal(err, null);
@@ -60,15 +69,28 @@ MongoClient.connect(url,{ useNewUrlParser: true }, (err, client) => {
         console.log(docs); res.json(docs);
         
       });
+
+
       
     });
 
+    app.post('/movies', (req, res, next) => {
+      var my_date =  req.param('date');
+      var my_review = req.param('review');
+      var my_id= req.param('id');
+      collection.updateOne(
+        { id: my_id },
+        {
+          $set: { review:my_review, date:my_date },
+          $currentDate: { lastModified: true }
+        }
+     );
+
+
+      return res.send(my_date+" "+my_review+" "+my_id);
+  
+    });
+
     
-    
-    /*db.collection("movies").insertMany(movies, function(err, res) {
-      if (err) throw err;
-      console.log(res.insertedCount+" documents inserted");
-      // close the connection to db when you are done with it
-      
-  });*/
+
 });
