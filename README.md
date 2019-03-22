@@ -12,3 +12,6 @@ exemples d'utilsation:
 *http://localhost:9292/movies/search?limit=1&metascore=2 (get)
 *http://localhost:9292/movies/tt0133952 (get)
 *http://localhost:9292/movies?date="ff"&review='ff'&id=tt1907668 (post)
+
+deploiement:
+https://hardcore-bell-f5b692.netlify.com/
